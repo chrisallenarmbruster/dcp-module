@@ -69,30 +69,73 @@ class DCPServer {
   }
 
   parseDCPRequest(requestString) {
-    const requestLineEnd = requestString.indexOf("\r\n");
-    if (requestLineEnd === -1) return null;
+    // Split the request string into lines
+    const lines = requestString.split("\r\n");
 
-    const requestLine = requestString.substring(0, requestLineEnd);
+    // Parse the request line
+    const requestLine = lines[0];
     const parts = requestLine.split(" ");
+    if (parts.length !== 3) return null;
 
     let methodOperator = null;
     let requestMethod;
     let dcpRequestUri, dcpVersion;
 
-    if (parts.length === 3) {
-      const methodIndex = parts[0].indexOf("!");
-      if (methodIndex !== -1) {
-        methodOperator = parts[0].substring(0, methodIndex);
-        requestMethod = parts[0].substring(methodIndex + 1);
-      } else {
-        requestMethod = parts[0];
-      }
-      [dcpRequestUri, dcpVersion] = [parts[1], parts[2]];
+    const methodIndex = parts[0].indexOf("!");
+    if (methodIndex !== -1) {
+      methodOperator = parts[0].substring(0, methodIndex);
+      requestMethod = parts[0].substring(methodIndex + 1);
     } else {
-      return null;
+      requestMethod = parts[0];
+    }
+    [dcpRequestUri, dcpVersion] = [parts[1], parts[2]];
+
+    // Parse headers
+    const headers = {};
+    let lineIndex = 1;
+    while (lineIndex < lines.length && lines[lineIndex]) {
+      const headerLine = lines[lineIndex];
+      const separatorIndex = headerLine.indexOf(":");
+      if (separatorIndex === -1) return null; // Invalid header line
+
+      const headerName = headerLine.substring(0, separatorIndex).trim();
+      const headerValue = headerLine.substring(separatorIndex + 1).trim();
+      headers[headerName] = headerValue;
+      lineIndex++;
     }
 
-    return { methodOperator, requestMethod, dcpRequestUri, dcpVersion };
+    // Parse body (optional)
+    let body = null;
+    if (lineIndex < lines.length - 1) {
+      body = lines.slice(lineIndex + 1).join("\r\n");
+    }
+
+    return new DCPRequest(
+      methodOperator,
+      requestMethod,
+      dcpRequestUri,
+      dcpVersion,
+      headers,
+      body
+    );
+  }
+}
+
+class DCPRequest {
+  constructor(
+    methodOperator,
+    requestMethod,
+    requestUri,
+    version,
+    headers,
+    body
+  ) {
+    this.methodOperator = methodOperator;
+    this.requestMethod = requestMethod;
+    this.requestUri = requestUri;
+    this.version = version;
+    this.headers = headers;
+    this.body = body;
   }
 }
 

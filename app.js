@@ -1,7 +1,15 @@
 const { createServer } = require("./dcp");
 
 const dcpServer = createServer((req, res) => {
-  console.log(`Received request: ${req.requestMethod} ${req.dcpRequestUri}`);
+  console.log(
+    `\nReceived request:\n` +
+      `methodOperator: ${req.methodOperator}\n` +
+      `requestMethod: ${req.requestMethod}\n` +
+      `requestUri: ${req.requestUri}\n` +
+      `version: ${req.version}\n` +
+      `headers: ${JSON.stringify(req.headers)}\n` +
+      `body: ${req.body}`
+  );
   res.send(JSON.stringify(req));
   res.end();
 });
