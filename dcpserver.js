@@ -1,4 +1,6 @@
 const net = require("net");
+const DCPRequest = require("./dcprequest");
+const DCPResponse = require("./dcpresponse");
 
 class DCPServer {
   constructor(requestHandler) {
@@ -6,12 +8,14 @@ class DCPServer {
       socket.on("data", (data) => {
         const dcpRequest = this.parseDCPRequest(data.toString());
         if (!dcpRequest) {
-          // Handle invalid request
+          const dcpResponse = new DCPResponse(socket, "DCP/1.0");
+          dcpResponse.setStatus(400, "Bad Request");
+          dcpResponse.send("Invalid DCP Request");
           socket.end("Invalid DCP Request");
           return;
         }
 
-        const dcpResponse = new DCPResponse(socket);
+        const dcpResponse = new DCPResponse(socket, dcpRequest.version);
         requestHandler(dcpRequest, dcpResponse);
       });
 
@@ -47,6 +51,19 @@ class DCPServer {
             reject(error);
           } else {
             resolve();
+            class DCPResponse {
+              constructor(socket) {
+                this.socket = socket;
+              }
+
+              send(responseData) {
+                this.socket.write(responseData);
+              }
+
+              end() {
+                this.socket.end();
+              }
+            }
           }
         });
 
@@ -69,10 +86,8 @@ class DCPServer {
   }
 
   parseDCPRequest(requestString) {
-    // Split the request string into lines
     const lines = requestString.split("\r\n");
 
-    // Parse the request line
     const requestLine = lines[0];
     const parts = requestLine.split(" ");
     if (parts.length !== 3) return null;
@@ -90,13 +105,12 @@ class DCPServer {
     }
     [dcpRequestUri, dcpVersion] = [parts[1], parts[2]];
 
-    // Parse headers
     const headers = {};
     let lineIndex = 1;
     while (lineIndex < lines.length && lines[lineIndex]) {
       const headerLine = lines[lineIndex];
       const separatorIndex = headerLine.indexOf(":");
-      if (separatorIndex === -1) return null; // Invalid header line
+      if (separatorIndex === -1) return null;
 
       const headerName = headerLine.substring(0, separatorIndex).trim();
       const headerValue = headerLine.substring(separatorIndex + 1).trim();
@@ -104,7 +118,6 @@ class DCPServer {
       lineIndex++;
     }
 
-    // Parse body (optional)
     let body = null;
     if (lineIndex < lines.length - 1) {
       body = lines.slice(lineIndex + 1).join("\r\n");
@@ -118,38 +131,6 @@ class DCPServer {
       headers,
       body
     );
-  }
-}
-
-class DCPRequest {
-  constructor(
-    methodOperator,
-    requestMethod,
-    requestUri,
-    version,
-    headers,
-    body
-  ) {
-    this.methodOperator = methodOperator;
-    this.requestMethod = requestMethod;
-    this.requestUri = requestUri;
-    this.version = version;
-    this.headers = headers;
-    this.body = body;
-  }
-}
-
-class DCPResponse {
-  constructor(socket) {
-    this.socket = socket;
-  }
-
-  send(responseData) {
-    this.socket.write(responseData);
-  }
-
-  end() {
-    this.socket.end();
   }
 }
 

@@ -1,4 +1,5 @@
 const net = require("net");
+const DCPRequest = require("./dcprequest");
 
 class DCPClient {
   constructor() {
@@ -24,13 +25,32 @@ class DCPClient {
     });
   }
 
-  sendRequest(requestString) {
+  request({
+    methodOperator = null,
+    requestMethod,
+    requestUri,
+    version = "DCP/1.0",
+    headers = {},
+    body = null,
+  }) {
+    return new DCPRequest(
+      methodOperator,
+      requestMethod,
+      requestUri,
+      version,
+      headers,
+      body
+    );
+  }
+
+  sendRequest(request) {
     return new Promise((resolve, reject) => {
       if (!this.isConnected) {
         reject(new Error("Not connected to server"));
         return;
       }
 
+      const requestString = request.getFormattedRequest();
       this.client.write(requestString);
 
       this.client.once("data", (data) => {

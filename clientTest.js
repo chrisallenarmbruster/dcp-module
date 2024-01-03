@@ -7,18 +7,22 @@ async function makeRequest() {
     await client.connect("localhost", 3000);
     console.log("Connected to DCP Server");
 
-    // const requestBody = JSON.stringify({ action: "reset" });
-    const requestBody = "Hello, World!";
-    const request =
-      "CANCEL!GET DCP://dcp.domain.com/Security.Reset() DCP/1.0\r\n" +
-      "Content-Type: application/json\r\n" +
-      "Content-Length: " +
-      Buffer.byteLength(requestBody) +
-      "\r\n" +
-      "\r\n" +
-      requestBody;
+    const req = client.request({
+      methodOperator: "CANCEL",
+      requestMethod: "GET",
+      requestUri: "DCP://dcp.domain.com/Security.Reset()",
+      headers: { "Content-Type": "application/json" },
+      body: "Hello, World!",
+    });
 
-    const response = await client.sendRequest(request);
+    req.setHeader("Content-Length", req.body.length);
+
+    const response = await client.sendRequest(req);
+    console.log(
+      "\n\nSending formatted request:\n",
+      req.getFormattedRequest(),
+      "\n\n"
+    );
     console.log("Response from server:\n", response);
 
     client.disconnect();
