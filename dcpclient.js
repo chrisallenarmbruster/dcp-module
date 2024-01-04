@@ -1,26 +1,52 @@
 const net = require("net");
+const dgram = require("dgram");
 const DCPRequest = require("./dcprequest");
 
 class DCPClient {
   constructor() {
-    this.client = new net.Socket();
-    this.isConnected = false;
+    this.tcpClient = new net.Socket();
+    this.udpClient = dgram.createSocket("udp4");
+    this.isConnectedTCP = false;
+    this.isConnectedUDP = false;
   }
 
-  connect(host, port) {
+  connectTCP(host, port) {
     return new Promise((resolve, reject) => {
-      this.client.connect(port, host, () => {
-        this.isConnected = true;
+      this.tcpClient.connect(port, host, () => {
+        this.isConnectedTCP = true;
         resolve();
       });
 
-      this.client.on("error", (error) => {
+      this.tcpClient.on("error", (error) => {
         reject(error);
       });
 
-      this.client.on("end", () => {
+      this.tcpClient.on("end", () => {
         console.log("Disconnected from the server");
-        this.isConnected = false;
+        this.isConnectedTCP = false;
+      });
+    });
+  }
+
+  connectUDP(host, port) {
+    console.log("Connecting to UDP server");
+    return new Promise((resolve, reject) => {
+      this.udpClient = dgram.createSocket("udp4"); // Create a new UDP socket
+
+      this.udpClient.on("error", (error) => {
+        reject(error);
+      });
+
+      this.udpClient.on("close", () => {
+        console.log("Disconnected from the UDP server");
+        this.isConnectedUDP = false;
+      });
+
+      this.udpClient.bind(() => {
+        this.udpClient.connect(port, host, () => {
+          this.isConnectedUDP = true;
+          resolve();
+        });
       });
     });
   }
@@ -32,6 +58,7 @@ class DCPClient {
     version = "DCP/1.0",
     headers = {},
     body = null,
+    protocol = "tcp", // Default to TCP
   }) {
     return new DCPRequest(
       methodOperator,
@@ -45,29 +72,55 @@ class DCPClient {
 
   sendRequest(request) {
     return new Promise((resolve, reject) => {
-      if (!this.isConnected) {
-        reject(new Error("Not connected to server"));
-        return;
+      if (this.isConnectedTCP) {
+        const requestString = request.getFormattedRequest();
+        this.tcpClient.write(requestString);
+
+        this.tcpClient.once("data", (data) => {
+          resolve(data.toString());
+        });
+
+        this.tcpClient.once("error", (error) => {
+          reject(error);
+        });
+      } else if (this.isConnectedUDP) {
+        const requestString = request.getFormattedRequest();
+        this.udpClient.send(requestString, (error) => {
+          if (error) {
+            reject(error);
+          }
+        });
+
+        this.udpClient.once("message", (data) => {
+          resolve(data.toString());
+        });
+
+        this.udpClient.once("error", (error) => {
+          reject(error);
+        });
+      } else {
+        reject(new Error("Not connected to any server"));
       }
-
-      const requestString = request.getFormattedRequest();
-      this.client.write(requestString);
-
-      this.client.once("data", (data) => {
-        resolve(data.toString());
-      });
-
-      this.client.once("error", (error) => {
-        reject(error);
-      });
     });
   }
 
-  disconnect() {
-    if (this.isConnected) {
-      this.client.end();
-      this.isConnected = false;
+  disconnectTCP() {
+    if (this.isConnectedTCP) {
+      this.tcpClient.end();
+      this.isConnectedTCP = false;
     }
+  }
+
+  disconnectUDP() {
+    if (this.isConnectedUDP) {
+      this.udpClient.close();
+      this.isConnectedUDP = false;
+    }
+  }
+
+  disconnect() {
+    this.disconnectTCP();
+    this.disconnectUDP();
   }
 }
 

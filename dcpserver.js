@@ -1,10 +1,11 @@
 const net = require("net");
+const dgram = require("dgram");
 const DCPRequest = require("./dcprequest");
 const DCPResponse = require("./dcpresponse");
 
 class DCPServer {
   constructor(requestHandler) {
-    this.server = net.createServer((socket) => {
+    this.tcpServer = net.createServer((socket) => {
       socket.on("data", (data) => {
         const dcpRequest = this.parseDCPRequest(data.toString());
         if (!dcpRequest) {
@@ -28,12 +29,36 @@ class DCPServer {
       });
     });
 
-    this.server.on("error", (error) => {
-      console.error("Server Error:", error);
+    this.udpServer = dgram.createSocket("udp4");
+
+    this.udpServer.on("message", (msg, rinfo) => {
+      console.log(`UDP message received from ${rinfo.address}:${rinfo.port}`);
+      const dcpRequest = this.parseDCPRequest(msg.toString());
+      if (!dcpRequest) {
+        // Handle invalid UDP request
+        console.log("Invalid UDP request");
+      } else {
+        // Handle UDP request using requestHandler
+        // You may want to create a separate UDP response mechanism
+        // or use the same DCPResponse class with some modifications
+        requestHandler(dcpRequest /* udpResponseObject */);
+      }
     });
 
-    this.server.on("close", () => {
-      console.log("Server Closed");
+    this.tcpServer.on("error", (error) => {
+      console.error("TCP Server Error:", error);
+    });
+
+    this.udpServer.on("error", (error) => {
+      console.error("UDP Server Error:", error);
+    });
+
+    this.tcpServer.on("close", () => {
+      console.log("TCP Server Closed");
+    });
+
+    this.udpServer.on("close", () => {
+      console.log("UDP Server Closed");
     });
   }
 
@@ -51,23 +76,11 @@ class DCPServer {
             reject(error);
           } else {
             resolve();
-            class DCPResponse {
-              constructor(socket) {
-                this.socket = socket;
-              }
-
-              send(responseData) {
-                this.socket.write(responseData);
-              }
-
-              end() {
-                this.socket.end();
-              }
-            }
           }
         });
 
-        this.server.listen(...args).on("error", reject);
+        this.tcpServer.listen(...args).on("error", reject);
+        this.udpServer.bind(port, host);
       });
 
       if (callback) {
@@ -82,7 +95,9 @@ class DCPServer {
   }
 
   close(callback) {
-    this.server.close(callback);
+    this.tcpServer.close(() => {
+      this.udpServer.close(callback);
+    });
   }
 
   parseDCPRequest(requestString) {
