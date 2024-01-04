@@ -13,6 +13,7 @@ class DCPRequest {
     this.version = version;
     this.headers = headers;
     this.body = body;
+    this.isUDP = false;
   }
 
   setHeader(name, value) {

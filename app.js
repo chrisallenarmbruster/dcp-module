@@ -1,11 +1,26 @@
 const { createServer } = require("./dcp");
 
 const dcpServer = createServer((req, res) => {
-  console.log(
-    "\n\nReceived formatted request:\n",
-    req.getFormattedRequest(),
-    "\n\n"
-  );
+  if (req.isUDP) {
+    console.log(`${req.message}\n`);
+    parseAndPrintDCPRequest(req);
+    console.log("\n\nUDP messages do not get responses.");
+  } else {
+    console.log(
+      `\n\nReceived formatted TCP request:\n\n${req.getFormattedRequest()} \n\n`
+    );
+    parseAndPrintDCPRequest(req);
+    console.log(
+      `\n\nSending TCP response:\n\n${res.version} ${res.statusCode} ${
+        res.statusMessage
+      }\n\n${JSON.stringify(req)}\n\n`
+    );
+    res.send(JSON.stringify(req));
+    res.end();
+  }
+});
+
+const parseAndPrintDCPRequest = (req) => {
   console.log(
     `\nParsed request:\n` +
       `methodOperator: ${req.methodOperator}\n` +
@@ -15,17 +30,8 @@ const dcpServer = createServer((req, res) => {
       `headers: ${JSON.stringify(req.headers)}\n` +
       `body: ${req.body}`
   );
-  console.log(
-    "\n\nSending response:\n",
-    `${res.version} ${res.statusCode} ${res.statusMessage} \n\n${JSON.stringify(
-      req
-    )}`,
-    "\n\n"
-  );
-  res.send(JSON.stringify(req));
-  res.end();
-});
+};
 
 dcpServer.listen(3000, () => {
-  console.log("DCP Server is running on port 3000");
+  console.log("DCP Server is listening for TCP and UDP messages on port 3000");
 });

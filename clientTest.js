@@ -4,9 +4,8 @@ const client = createClient();
 
 async function makeRequest() {
   try {
-    // Connect to TCP server
     await client.connectTCP("localhost", 3000);
-    console.log("Connected to TCP DCP Server");
+    console.log("Connected to the DCP TCP Service");
 
     const req = client.request({
       methodOperator: "CANCEL",
@@ -20,30 +19,21 @@ async function makeRequest() {
 
     const response = await client.sendRequest(req); //
     console.log(
-      "\n\nSending formatted request over TCP:\n\n",
-      req.getFormattedRequest(),
-      "\n\n"
+      `\nSending formatted request over TCP:\n\n${req.getFormattedRequest()}\n\n\nResponse from TCP server:\n\n${response}`
     );
-    console.log("Response from TCP server:\n", response);
 
-    client.disconnectTCP();
-    /*
-    // Connect to UDP server
+    await client.disconnectTCP();
+
     await client.connectUDP("localhost", 3000);
-    console.log("Connected to UDP DCP Server");
+    console.log("\n\nConnected to DCP UDP Service");
 
-    // Send a request over UDP (similar to TCP, no need to specify protocol)
+    req.requestUri = "DCPU://dcp.domain.com/Security.Reset()";
     const udpResponse = await client.sendRequest(req);
     console.log(
-      "\n\nSending formatted request over UDP:\n\n",
-      // req.getFormattedRequest(),
-      "\n\n"
+      `\n\nSending formatted request over UDP:\n\n${req.getFormattedRequest()}\n\n\n${udpResponse}\n\nUDP messages do not get responses.\n`
     );
-    // console.log("Response from UDP server:\n", udpResponse);
-    console.log("Response from UDP server:\n");
 
-    client.disconnectUDP(); // Disconnect from UDP server
-    */
+    client.disconnectUDP();
   } catch (error) {
     console.error("Error:", error);
   }

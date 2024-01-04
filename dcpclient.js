@@ -22,23 +22,23 @@ class DCPClient {
       });
 
       this.tcpClient.on("end", () => {
-        console.log("Disconnected from the server");
+        console.log("Disconnected from the TCP service");
         this.isConnectedTCP = false;
       });
     });
   }
 
   connectUDP(host, port) {
-    console.log("Connecting to UDP server");
+    console.log("Connecting to UDP service");
     return new Promise((resolve, reject) => {
-      this.udpClient = dgram.createSocket("udp4"); // Create a new UDP socket
+      this.udpClient = dgram.createSocket("udp4");
 
       this.udpClient.on("error", (error) => {
         reject(error);
       });
 
       this.udpClient.on("close", () => {
-        console.log("Disconnected from the UDP server");
+        console.log("Disconnected from the UDP service");
         this.isConnectedUDP = false;
       });
 
@@ -58,7 +58,6 @@ class DCPClient {
     version = "DCP/1.0",
     headers = {},
     body = null,
-    protocol = "tcp", // Default to TCP
   }) {
     return new DCPRequest(
       methodOperator,
@@ -88,11 +87,9 @@ class DCPClient {
         this.udpClient.send(requestString, (error) => {
           if (error) {
             reject(error);
+          } else {
+            resolve("UDP request sent successfully");
           }
-        });
-
-        this.udpClient.once("message", (data) => {
-          resolve(data.toString());
         });
 
         this.udpClient.once("error", (error) => {

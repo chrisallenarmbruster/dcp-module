@@ -32,16 +32,13 @@ class DCPServer {
     this.udpServer = dgram.createSocket("udp4");
 
     this.udpServer.on("message", (msg, rinfo) => {
-      console.log(`UDP message received from ${rinfo.address}:${rinfo.port}`);
       const dcpRequest = this.parseDCPRequest(msg.toString());
+      dcpRequest.isUDP = true;
+      dcpRequest.message = `Received formatted UDP message from ${rinfo.address}:${rinfo.port}:\n\n${msg}`;
       if (!dcpRequest) {
-        // Handle invalid UDP request
         console.log("Invalid UDP request");
       } else {
-        // Handle UDP request using requestHandler
-        // You may want to create a separate UDP response mechanism
-        // or use the same DCPResponse class with some modifications
-        requestHandler(dcpRequest /* udpResponseObject */);
+        requestHandler(dcpRequest, null);
       }
     });
 
