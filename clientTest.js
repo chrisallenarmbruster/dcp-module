@@ -4,9 +4,6 @@ const client = createClient();
 
 async function makeRequest() {
   try {
-    await client.connectTCP("localhost", 3000);
-    console.log("Connected to the DCP TCP Service");
-
     const req = client.request({
       methodOperator: "CANCEL",
       requestMethod: "GET",
@@ -17,12 +14,14 @@ async function makeRequest() {
 
     req.setHeader("Content-Length", req.body.length);
 
+    await client.connectTCP("localhost", 3000);
+    console.log("Connected to the DCP TCP Service");
     const response = await client.sendRequest(req); //
     console.log(
       `\nSending formatted request over TCP:\n\n${req.getFormattedRequest()}\n\n\nResponse from TCP server:\n\n${response}`
     );
 
-    await client.disconnectTCP();
+    client.disconnectTCP();
 
     await client.connectUDP("localhost", 3000);
     console.log("\n\nConnected to DCP UDP Service");
