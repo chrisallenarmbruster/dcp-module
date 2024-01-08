@@ -9,8 +9,102 @@ class DCPNode {
     this.messageHandler = null;
   }
 
-  sendMessage(message, targetIpAddress, targetPort, protocol) {
-    // Code to send a message
+  createResponseMessage(protocol, version, headers = {}, body = "") {
+    return new DCPResponse(protocol, null, version, null, headers, body);
+  }
+
+  createRequestMessage(
+    methodOperator,
+    requestMethod,
+    requestUri,
+    version,
+    protocol,
+    headers = {},
+    body = ""
+  ) {
+    return new DCPRequest(
+      methodOperator,
+      requestMethod,
+      requestUri,
+      version,
+      protocol,
+      headers,
+      body
+    );
+  }
+
+  async sendMessage(message, targetIpAddress, targetPort, protocol) {
+    if (protocol === "TCP") {
+      // Implement TCP sending logic
+      return await this._sendTCPMessage(message, targetIpAddress, targetPort);
+    } else if (protocol === "UDP") {
+      // Implement UDP sending logic
+      return this._sendUDPMessage(message, targetIpAddress, targetPort);
+    } else {
+      console.error("Unsupported protocol");
+    }
+  }
+
+  //TODO: Consider adding response handler callback when TCP requests that are sent are expecting a response
+  //TODO: We'll need to parse the response in this case, since the response will be sent to the callback
+  _sendTCPMessage(message, targetIpAddress, targetPort) {
+    return new Promise((resolve, reject) => {
+      const formattedMessage = message.getFormattedMessage();
+      const client = new net.Socket();
+
+      client.connect(targetPort, targetIpAddress, () => {
+        client.write(formattedMessage);
+
+        if (!(message instanceof DCPRequest)) {
+          client.end();
+          resolve();
+        }
+      });
+
+      if (message instanceof DCPRequest) {
+        client.on("data", (data) => {
+          client.end();
+          const responseStr = data.toString("utf-8");
+          resolve(responseStr);
+        });
+
+        client.on("timeout", () => {
+          console.log("TCP request timed out.");
+          client.end();
+          reject(new Error("TCP request timed out"));
+        });
+      }
+
+      client.on("error", (err) => {
+        console.error("TCP Error:", err);
+        client.end();
+        reject(err);
+      });
+    });
+  }
+
+  //TODO: Consider adding response handler callback when UDP requests that are sent are expecting a response
+  //TODO: add a map of request IDs to callbacks
+  //TODO: We'll need to parse the response in this case, since the response will be sent to the callback
+  _sendUDPMessage(message, targetIpAddress, targetPort) {
+    const formattedMessage = message.getFormattedMessage();
+    const udpSocket = dgram.createSocket("udp4");
+    const messageBuffer = Buffer.from(formattedMessage);
+
+    udpSocket.send(
+      messageBuffer,
+      0,
+      messageBuffer.length,
+      targetPort,
+      targetIpAddress,
+      (err) => {
+        if (err) {
+          console.error("UDP Error:", err);
+        }
+        udpSocket.close();
+      }
+    );
+    return "UDP Message Sent";
   }
 
   listen(listenPort, messageHandler) {
@@ -47,7 +141,8 @@ class DCPNode {
       );
 
       if (parsedMessage instanceof DCPResponse) {
-        this._handleResponse(parsedMessage);
+        // this._handleResponse(parsedMessage);
+        this.messageHandler(null, parsedMessage);
       } else if (parsedMessage instanceof DCPRequest) {
         let version = "DCP/1.0";
         const res = new DCPResponse(protocol, responseSocket, version, rinfo);

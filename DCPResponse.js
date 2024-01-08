@@ -25,11 +25,7 @@ class DCPResponse {
 
   send(body, keepConnectionOpen = false) {
     this.body = body;
-    let response = `${this.version} ${this.statusCode} ${this.statusMessage}\r\n`;
-    for (const [key, value] of Object.entries(this.headers)) {
-      response += `${key}: ${value}\r\n`;
-    }
-    response += `\r\n${body}`;
+    const response = this.getFormattedMessage();
 
     if (this.protocol === "TCP") {
       this.responseSocket.write(response, () => {
@@ -52,6 +48,15 @@ class DCPResponse {
         }
       );
     }
+  }
+
+  getFormattedMessage() {
+    let response = `${this.version} ${this.statusCode} ${this.statusMessage}\r\n`;
+    for (const [key, value] of Object.entries(this.headers)) {
+      response += `${key}: ${value}\r\n`;
+    }
+    response += `\r\n${this.body}`;
+    return response;
   }
 }
 

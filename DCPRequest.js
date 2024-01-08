@@ -29,7 +29,7 @@ class DCPRequest {
     delete this.headers[name];
   }
 
-  getFormattedRequest() {
+  getFormattedMessage() {
     let requestLine = `${this.requestMethod} ${this.requestUri} ${this.version}\r\n`;
     if (this.methodOperator) {
       requestLine = `${this.methodOperator}!` + requestLine;

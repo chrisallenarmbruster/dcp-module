@@ -6,7 +6,7 @@ dcpNode.listen(3000, (req, res) => {
   console.log(
     `\n\nReceived formatted ${
       req.protocol
-    } request:\n\n${req.getFormattedRequest()} \n\n`
+    } request:\n\n${req.getFormattedMessage()} \n\n`
   );
   parseAndPrintDCPRequest(req);
   console.log(
