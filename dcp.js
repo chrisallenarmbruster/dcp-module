@@ -1,13 +1,7 @@
-const DCPServer = require("./dcpserver");
-const DCPClient = require("./dcpclient");
+const DCPNode = require("./DCPNode.js");
 
-function createServer(requestHandler) {
-  return new DCPServer(requestHandler);
+function createNode(id) {
+  return new DCPNode(id);
 }
 
-function createClient() {
-  return new DCPClient();
-}
-
-module.exports.createServer = createServer;
-module.exports.createClient = createClient;
+module.exports.createNode = createNode;

@@ -1,7 +1,7 @@
 const net = require("net");
 const dgram = require("dgram");
-const DCPRequest = require("./dcprequest");
-const DCPResponse = require("./dcpresponse");
+const DCPRequest = require("./old-dcprequest.js");
+const DCPResponse = require("./old-dcpresponse.js");
 
 class DCPServer {
   constructor(requestHandler) {

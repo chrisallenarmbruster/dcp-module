@@ -1,6 +1,6 @@
 const net = require("net");
 const dgram = require("dgram");
-const DCPRequest = require("./dcprequest");
+const DCPRequest = require("./old-dcprequest");
 
 class DCPClient {
   constructor() {

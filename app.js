@@ -1,23 +1,21 @@
-const { createServer } = require("./dcp");
+const { createNode } = require("./dcp");
 
-const dcpServer = createServer((req, res) => {
-  if (req.isUDP) {
-    console.log(`${req.message}\n`);
-    parseAndPrintDCPRequest(req);
-    console.log("\n\nUDP messages do not get responses.");
-  } else {
-    console.log(
-      `\n\nReceived formatted TCP request:\n\n${req.getFormattedRequest()} \n\n`
-    );
-    parseAndPrintDCPRequest(req);
-    console.log(
-      `\n\nSending TCP response:\n\n${res.version} ${res.statusCode} ${
-        res.statusMessage
-      }\n\n${JSON.stringify(req)}\n\n`
-    );
-    res.send(JSON.stringify(req));
-    res.end();
-  }
+const dcpNode = createNode("node1");
+
+dcpNode.listen(3000, (req, res) => {
+  console.log(
+    `\n\nReceived formatted ${
+      req.protocol
+    } request:\n\n${req.getFormattedRequest()} \n\n`
+  );
+  parseAndPrintDCPRequest(req);
+  console.log(
+    `\n\nSending ${req.protocol} response:\n\n${res.version} ${
+      res.statusCode
+    } ${res.statusMessage}\n\n${JSON.stringify(req)}\n\n`
+  );
+  res.send(JSON.stringify(req));
+  // res.end();
 });
 
 const parseAndPrintDCPRequest = (req) => {
@@ -31,7 +29,3 @@ const parseAndPrintDCPRequest = (req) => {
       `body: ${req.body}`
   );
 };
-
-dcpServer.listen(3000, () => {
-  console.log("DCP Server is listening for TCP and UDP messages on port 3000");
-});

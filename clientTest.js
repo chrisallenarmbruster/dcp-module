@@ -1,4 +1,4 @@
-const { createClient } = require("./dcp");
+const { createClient } = require("./old-dcp.js");
 
 const client = createClient();
 
