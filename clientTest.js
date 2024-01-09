@@ -14,8 +14,16 @@ const makeRequest = async () => {
 
     req.setHeader("Content-Length", req.body.length);
 
-    const response = await dcpNode.sendMessage(req, "localhost", 3000, "TCP");
-    console.log(response);
+    const response = await dcpNode.sendMessage(
+      req,
+      "localhost",
+      3000,
+      "TCP",
+      (res) => {
+        console.log("\nBooyah!\n");
+        console.log(res);
+      }
+    );
   } catch (error) {
     console.error("Error:", error);
   }

@@ -42,6 +42,17 @@ class DCPRequest {
 
     return `${requestLine}${headers}\r\n${this.body}`;
   }
+
+  _generateTransactionId() {
+    const timestamp = Date.now();
+    const randomComponent = Math.floor(Math.random() * 1000000);
+    return `${timestamp}-${randomComponent}`;
+  }
+
+  setTransactionId(transactionId = null) {
+    const id = transactionId || this._generateTransactionId();
+    this.setHeader("TRANSACTION-ID", id);
+  }
 }
 
 module.exports = DCPRequest;
