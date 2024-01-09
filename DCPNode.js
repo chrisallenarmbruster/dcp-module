@@ -166,7 +166,7 @@ class DCPNode {
   _setupTCPServer(port) {
     const tcpServer = net.createServer((socket) => {
       socket.on("data", (data) => {
-        console.log("Received TCP message:", data.toString());
+        console.log(`\nReceived TCP message:\n\n${data.toString()}`);
         this._handleIncomingMessage(data.toString(), "TCP", socket);
       });
     });
@@ -183,8 +183,24 @@ class DCPNode {
       );
 
       if (parsedMessage instanceof DCPResponse) {
-        // this._handleResponse(parsedMessage);
-        this.messageHandler(null, parsedMessage);
+        try {
+          const response = parsedMessage;
+          const transactionId = response.getHeader("TRANSACTION-ID");
+
+          const handler =
+            this.responseHandlers.get(transactionId) ||
+            this.defaultResponseHandler;
+
+          handler(response);
+
+          if (this.responseHandlers.has(transactionId)) {
+            this.responseHandlers.delete(transactionId);
+          }
+
+          return response;
+        } catch (err) {
+          reject(err);
+        }
       } else if (parsedMessage instanceof DCPRequest) {
         let version = "DCP/1.0";
         const res = new DCPResponse(protocol, responseSocket, version, rinfo);

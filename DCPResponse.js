@@ -19,14 +19,21 @@ class DCPResponse {
     this.headers[name] = value;
   }
 
+  getHeader(name) {
+    return this.headers[name];
+  }
+
   setBody(body) {
     this.body = body;
   }
 
-  send(body, keepConnectionOpen = false) {
+  async send(body, keepConnectionOpen = false) {
+    console.log("\n\nDCPResponse.send method called.");
     this.body = body;
-    const response = this.getFormattedMessage();
-
+    body = this.body;
+    let response = await this.getFormattedMessage();
+    console.log("\nFormatting response...\n");
+    console.log(response);
     if (this.protocol === "TCP") {
       this.responseSocket.write(response, () => {
         if (!keepConnectionOpen) {
@@ -39,7 +46,8 @@ class DCPResponse {
         messageBuffer,
         0,
         messageBuffer.length,
-        this.rinfo.port,
+        3000,
+        // this.rinfo.port,
         this.rinfo.address,
         (err) => {
           if (err) {

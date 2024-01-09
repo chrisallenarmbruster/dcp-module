@@ -14,6 +14,7 @@ dcpNode.listen(3000, (req, res) => {
       res.statusCode
     } ${res.statusMessage}\n\n${JSON.stringify(req)}\n\n`
   );
+  console.log(req);
   res.send(JSON.stringify(req));
   // res.end();
 });
