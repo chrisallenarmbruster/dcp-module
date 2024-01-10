@@ -1,4 +1,4 @@
-const PROTOCOL = "UDP";
+const PROTOCOL = "TCP";
 
 const dcpNode = require("./dcp").createNode("node1");
 
