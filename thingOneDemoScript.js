@@ -1,8 +1,17 @@
+// This is meant to be used with the thingTwoDemoScript.js script
+// Start thingTwoDemoScript.js first in it's own terminal,
+// then run this script in a separate terminal.
+// You will see the two scripts communicate with each other.
+// Thing 1 will send a request to Thing 2.
+// Then Thing 2 will run a request handler and respond to Thing 1.
+// Thing 1 will then run a response handler that prints the response to the console.
+// Note the constants immediately below, try both TCP and UDP transport protocols.
+
 const dcpNode = require("./dcp").createNode("thing1");
-const LISTEN_PORT = 2500;
-const PROTOCOL = "TCP";
+const LISTEN_PORT = 2500; // What Thing 1 is listening on
+const PROTOCOL = "TCP"; // "UDP" or "TCP"
 const THING_TWO_HOST = "localhost";
-const THING_TWO_PORT = 2501;
+const THING_TWO_PORT = 2501; // if you are running Thing 1 and Thing 2 on the same machine, use a different ports!  Make sure this matches the LISTEN_PORT in thingTwoDemoScript.js.
 
 // Set up listener and request handler callback for incoming DCP requests
 dcpNode.listen(LISTEN_PORT, (req, res) => {
