@@ -1,11 +1,25 @@
-const { createServer } = require("./dcp");
+const { createNode } = require("./dcp");
 
-const dcpServer = createServer((req, res) => {
+const dcpNode = createNode("node1");
+
+dcpNode.listen(3000, (req, res) => {
   console.log(
-    "\n\nReceived formatted request:\n",
-    req.getFormattedRequest(),
-    "\n\n"
+    `\n\nReceived formatted ${
+      req.protocol
+    } request:\n\n${req.getFormattedMessage()} \n\n`
   );
+  parseAndPrintDCPRequest(req);
+  console.log(
+    `\n\nSending ${req.protocol} response:\n\n${res.version} ${
+      res.statusCode
+    } ${res.statusMessage}\n\n${JSON.stringify(req)}\n\n`
+  );
+  console.log(req);
+  res.send(JSON.stringify(req));
+  // res.end();
+});
+
+const parseAndPrintDCPRequest = (req) => {
   console.log(
     `\nParsed request:\n` +
       `methodOperator: ${req.methodOperator}\n` +
@@ -15,17 +29,4 @@ const dcpServer = createServer((req, res) => {
       `headers: ${JSON.stringify(req.headers)}\n` +
       `body: ${req.body}`
   );
-  console.log(
-    "\n\nSending response:\n",
-    `${res.version} ${res.statusCode} ${res.statusMessage} \n\n${JSON.stringify(
-      req
-    )}`,
-    "\n\n"
-  );
-  res.send(JSON.stringify(req));
-  res.end();
-});
-
-dcpServer.listen(3000, () => {
-  console.log("DCP Server is running on port 3000");
-});
+};
