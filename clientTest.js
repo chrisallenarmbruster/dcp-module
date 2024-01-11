@@ -1,9 +1,9 @@
-const PROTOCOL = "TCP";
+const PROTOCOL = "UDP";
 
 const dcpNode = require("./dcp").createNode("node1");
 
 // Set up listener and request handler callback for incoming DCP requests
-dcpNode.listen(3000, (req, res) => {
+dcpNode.listen(2500, (req, res) => {
   console.log(
     `\n\nReceived formatted ${
       req.protocol
@@ -36,7 +36,7 @@ const makeRequest = async () => {
     const response = await dcpNode.sendMessage(
       req,
       "localhost",
-      3000,
+      2500,
       req.protocol,
       (res) => {
         console.log(

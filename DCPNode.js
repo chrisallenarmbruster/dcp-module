@@ -6,6 +6,7 @@ const DCPResponse = require("./DCPResponse.js");
 class DCPNode {
   constructor(id) {
     this.id = id;
+    this.listenPort = 2500;
     this.messageHandler = null;
     this.responseHandlers = new Map();
     this.defaultResponseHandler = (response) => {
@@ -27,7 +28,7 @@ class DCPNode {
     headers = {},
     body = ""
   ) {
-    return new DCPRequest(
+    const request = new DCPRequest(
       methodOperator,
       requestMethod,
       requestUri,
@@ -36,6 +37,9 @@ class DCPNode {
       headers,
       body
     );
+    request.setHeader("LISTEN-PORT", this.listenPort);
+
+    return request;
   }
 
   async sendMessage(
@@ -46,6 +50,9 @@ class DCPNode {
     responseHandler = null,
     timeout = null
   ) {
+    if (!message.getHeader("LISTEN-PORT")) {
+      message.setHeader("LISTEN-PORT", this.listenPort);
+    }
     if (message instanceof DCPRequest) {
       if (!message.getHeader("TRANSACTION-ID")) {
         message.setTransactionId();
@@ -130,10 +137,9 @@ class DCPNode {
 
   _sendUDPMessage(message, targetIpAddress, targetPort) {
     const formattedMessage = message.getFormattedMessage();
-    const udpSocket = dgram.createSocket("udp4");
     const messageBuffer = Buffer.from(formattedMessage);
 
-    udpSocket.send(
+    this.udpServer.send(
       messageBuffer,
       0,
       messageBuffer.length,
@@ -143,7 +149,6 @@ class DCPNode {
         if (err) {
           console.error("UDP Error:", err);
         }
-        udpSocket.close();
       }
     );
     return "UDP Message Sent";
@@ -151,26 +156,28 @@ class DCPNode {
 
   listen(listenPort, messageHandler) {
     this.messageHandler = messageHandler;
-    this._setupUDPServer(listenPort);
-    this._setupTCPServer(listenPort);
+    this.listenPort = listenPort;
+    this._setupUDPServer(this.listenPort);
+    this._setupTCPServer(this.listenPort);
   }
 
   _setupUDPServer(port) {
-    const udpServer = dgram.createSocket("udp4");
-    udpServer.on("message", (msg, rinfo) => {
-      this._handleIncomingMessage(msg.toString(), "UDP", udpServer, rinfo);
+    this.udpServer = dgram.createSocket("udp4");
+    this.udpServer.on("message", (msg, rinfo) => {
+      this._handleIncomingMessage(msg.toString(), "UDP", this.udpServer, rinfo);
     });
-    udpServer.bind(port);
+    this.udpServer.bind(port);
+    console.log(`Listening for UDP messages on port ${port}...`);
   }
 
   _setupTCPServer(port) {
     const tcpServer = net.createServer((socket) => {
       socket.on("data", (data) => {
-        console.log(`\nReceived TCP message:\n\n${data.toString()}`);
         this._handleIncomingMessage(data.toString(), "TCP", socket);
       });
     });
     tcpServer.listen(port);
+    console.log(`Listening for TCP messages on port ${port}...`);
   }
 
   _handleIncomingMessage(rawMessage, protocol, responseSocket, rinfo) {
@@ -181,7 +188,9 @@ class DCPNode {
         responseSocket,
         rinfo
       );
-
+      // _handleResponse(response) {
+      //   console.log("Received response:", JSON.stringify(response, null, 2));
+      // }
       if (parsedMessage instanceof DCPResponse) {
         try {
           const response = parsedMessage;
@@ -190,7 +199,6 @@ class DCPNode {
           const handler =
             this.responseHandlers.get(transactionId) ||
             this.defaultResponseHandler;
-
           handler(response);
 
           if (this.responseHandlers.has(transactionId)) {
@@ -208,6 +216,8 @@ class DCPNode {
           "TRANSACTION-ID",
           parsedMessage.getHeader("TRANSACTION-ID")
         );
+        res.destinationPort = parsedMessage.getHeader("LISTEN-PORT") || 2500;
+        res.setHeader("LISTEN-PORT", this.listenPort);
         if (this.messageHandler) {
           this.messageHandler(parsedMessage, res);
         }
@@ -316,12 +326,16 @@ class DCPNode {
       response.setHeader(key, value);
     }
 
+    if (body !== null) {
+      response.setBody(body);
+    }
+
     return response;
   }
 
-  _handleResponse(response) {
-    console.log("Received response:", JSON.stringify(response, null, 2));
-  }
+  // _handleResponse(response) {
+  //   console.log("Received response:", JSON.stringify(response, null, 2));
+  // }
 }
 
 function createNode(id) {

@@ -25,6 +25,10 @@ class DCPRequest {
     return this.headers[name];
   }
 
+  setBody(body) {
+    this.body = body;
+  }
+
   removeHeader(name) {
     delete this.headers[name];
   }
