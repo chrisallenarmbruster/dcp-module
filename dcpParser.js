@@ -6,6 +6,7 @@ function parseDcpRequestUri(uri) {
     /\/(\*?[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*(\.[a-zA-Z0-9]+(\(.*\))?))?$/;
 
   let result = {
+    uriString: uri,
     scheme: null,
     host: null,
     port: null,
@@ -52,6 +53,6 @@ function parseDcpRequestUri(uri) {
 }
 
 // Example usage
-const uri = "DCP://x10.domain.com:2500/X10.Power(120,60,'one phase')";
+const uri = "DCP://x10.domain.com:2500/FLOOR1.X10.Power(120,60,'one phase')";
 const parsedUri = parseDcpRequestUri(uri);
 console.log(parsedUri);
