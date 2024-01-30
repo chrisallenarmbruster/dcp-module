@@ -37,7 +37,7 @@ class DCPNode {
       headers,
       body
     );
-    request.setHeader("LISTEN-PORT", this.listenPort);
+    request.setHeader("listen-port", this.listenPort);
 
     return request;
   }
@@ -50,21 +50,21 @@ class DCPNode {
     responseHandler = null,
     timeout = null
   ) {
-    if (!message.getHeader("LISTEN-PORT")) {
-      message.setHeader("LISTEN-PORT", this.listenPort);
+    if (!message.getHeader("listen-port")) {
+      message.setHeader("listen-port", this.listenPort);
     }
     if (message instanceof DCPRequest) {
-      if (!message.getHeader("TRANSACTION-ID")) {
+      if (!message.getHeader("transaction-id")) {
         message.setTransactionId();
       }
       if (responseHandler) {
         this.responseHandlers.set(
-          message.getHeader("TRANSACTION-ID"),
+          message.getHeader("transaction-id"),
           responseHandler
         );
 
         setTimeout(() => {
-          this.responseHandlers.delete(message.getHeader("TRANSACTION-ID"));
+          this.responseHandlers.delete(message.getHeader("transaction-id"));
         }, timeout || this.defaultTimeout);
       }
     }
@@ -102,7 +102,7 @@ class DCPNode {
               null,
               null
             );
-            const transactionId = message.getHeader("TRANSACTION-ID");
+            const transactionId = message.getHeader("transaction-id");
 
             const handler =
               this.responseHandlers.get(transactionId) ||
@@ -194,7 +194,7 @@ class DCPNode {
       if (parsedMessage instanceof DCPResponse) {
         try {
           const response = parsedMessage;
-          const transactionId = response.getHeader("TRANSACTION-ID");
+          const transactionId = response.getHeader("transaction-id");
 
           const handler =
             this.responseHandlers.get(transactionId) ||
@@ -213,11 +213,11 @@ class DCPNode {
         let version = "DCP/1.0";
         const res = new DCPResponse(protocol, responseSocket, version, rinfo);
         res.setHeader(
-          "TRANSACTION-ID",
-          parsedMessage.getHeader("TRANSACTION-ID")
+          "transaction-id",
+          parsedMessage.getHeader("transaction-id")
         );
-        res.destinationPort = parsedMessage.getHeader("LISTEN-PORT") || 2500;
-        res.setHeader("LISTEN-PORT", this.listenPort);
+        res.destinationPort = parsedMessage.getHeader("listen-port") || 2500;
+        res.setHeader("listen-port", this.listenPort);
         if (this.messageHandler) {
           this.messageHandler(parsedMessage, res);
         }
@@ -269,7 +269,10 @@ class DCPNode {
       const separatorIndex = headerLine.indexOf(":");
       if (separatorIndex === -1) return null;
 
-      const headerName = headerLine.substring(0, separatorIndex).trim();
+      const headerName = headerLine
+        .substring(0, separatorIndex)
+        .trim()
+        .toLowerCase();
       const headerValue = headerLine.substring(separatorIndex + 1).trim();
       headers[headerName] = headerValue;
       lineIndex++;
@@ -309,7 +312,10 @@ class DCPNode {
       const separatorIndex = headerLine.indexOf(":");
       if (separatorIndex === -1) return null;
 
-      const headerName = headerLine.substring(0, separatorIndex).trim();
+      const headerName = headerLine
+        .substring(0, separatorIndex)
+        .trim()
+        .toLowerCase();
       const headerValue = headerLine.substring(separatorIndex + 1).trim();
       headers[headerName] = headerValue;
       lineIndex++;
@@ -332,10 +338,6 @@ class DCPNode {
 
     return response;
   }
-
-  // _handleResponse(response) {
-  //   console.log("Received response:", JSON.stringify(response, null, 2));
-  // }
 }
 
 function createNode(id) {

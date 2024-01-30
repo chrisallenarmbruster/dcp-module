@@ -3,11 +3,11 @@ class DCPResponse {
     this.protocol = protocol;
     this.responseSocket = responseSocket;
     this.version = version;
-    this.headers = {};
     this.rinfo = rinfo;
     this.destinationPort = null;
     this.statusCode = 200;
     this.statusMessage = "OK";
+    this.headers = {};
     this.body = null;
   }
 
@@ -17,11 +17,11 @@ class DCPResponse {
   }
 
   setHeader(name, value) {
-    this.headers[name] = value;
+    this.headers[name.toLowerCase()] = value;
   }
 
   getHeader(name) {
-    return this.headers[name];
+    return this.headers[name.toLowerCase()];
   }
 
   setBody(body) {
@@ -60,7 +60,7 @@ class DCPResponse {
   getFormattedMessage() {
     let response = `${this.version} ${this.statusCode} ${this.statusMessage}\r\n`;
     for (const [key, value] of Object.entries(this.headers)) {
-      response += `${key}: ${value}\r\n`;
+      response += `${key.toLowerCase()}: ${value}\r\n`;
     }
     response += `\r\n${this.body}`;
     return response;
