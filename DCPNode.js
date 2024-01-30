@@ -280,7 +280,17 @@ class DCPNode {
 
     let body = null;
     if (lineIndex < lines.length - 1) {
-      body = lines.slice(lineIndex + 1).join("\r\n");
+      const rawBody = lines.slice(lineIndex + 1).join("\r\n");
+      const contentType = headers["content-type"];
+      if (contentType === "application/json") {
+        try {
+          body = JSON.parse(rawBody);
+        } catch (error) {
+          console.error("Error parsing JSON body:", error);
+        }
+      } else {
+        body = rawBody;
+      }
     }
 
     return new DCPRequest(
@@ -323,7 +333,17 @@ class DCPNode {
 
     let body = null;
     if (lineIndex < lines.length && lines[lineIndex] === "") {
-      body = lines.slice(lineIndex + 1).join("\r\n");
+      const rawBody = lines.slice(lineIndex + 1).join("\r\n");
+      const contentType = headers["content-type"];
+      if (contentType === "application/json") {
+        try {
+          body = JSON.parse(rawBody);
+        } catch (error) {
+          console.error("Error parsing JSON body:", error);
+        }
+      } else {
+        body = rawBody;
+      }
     }
 
     const response = new DCPResponse(protocol, responseSocket, version, rinfo);

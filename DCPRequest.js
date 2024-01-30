@@ -48,7 +48,15 @@ class DCPRequest {
       headers += `${key.toLowerCase()}: ${value}\r\n`;
     }
 
-    return `${requestLine}${headers}\r\n${this.body}`;
+    let formattedBody = this.body;
+    if (
+      typeof this.body === "object" &&
+      this.getHeader("content-type") === "application/json"
+    ) {
+      formattedBody = JSON.stringify(this.body);
+    }
+
+    return `${requestLine}${headers}\r\n${formattedBody}`;
   }
 
   _generateTransactionId() {

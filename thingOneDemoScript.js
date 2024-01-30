@@ -41,14 +41,21 @@ const makeRequest = async () => {
     "DCP/1.0",
     PROTOCOL,
     { "Content-Type": "application/json" },
-    "Hello, World!"
+    {
+      msg: "Hello World!",
+      test: 123,
+      bool: true,
+      arr: [1, 2, 3],
+      obj: { a: 1 },
+    }
   );
 
   // Set any additional headers on the request message
   req.setHeader("Content-Length", req.body.length);
 
   // Optionally, set the a body on the request message (if not passed in constructor)
-  req.setBody((req.body += "\nHello, Universe!"));
+  // req.setHeader("content-type", "text/plain");
+  // req.setBody("\nHello, Universe!");
 
   console.log(
     `\nPrepared request message object:\n${JSON.stringify(req, null, 2)}`

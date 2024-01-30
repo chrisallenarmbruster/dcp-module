@@ -29,8 +29,16 @@ class DCPResponse {
   }
 
   async send(body, keepConnectionOpen = false) {
-    if (typeof body === "string") {
-      this.body = body;
+    if (body !== undefined) {
+      if (typeof body === "object" && !(body instanceof String)) {
+        if (!this.getHeader("content-type")) {
+          this.setHeader("content-type", "application/json");
+        }
+        this.body = JSON.stringify(body);
+      } else {
+        console.log("body:", body);
+        this.body = body;
+      }
     }
 
     let response = this.getFormattedMessage();
@@ -62,7 +70,16 @@ class DCPResponse {
     for (const [key, value] of Object.entries(this.headers)) {
       response += `${key.toLowerCase()}: ${value}\r\n`;
     }
-    response += `\r\n${this.body}`;
+
+    let formattedBody = this.body;
+    if (
+      typeof this.body === "object" &&
+      this.getHeader("content-type") === "application/json"
+    ) {
+      formattedBody = JSON.stringify(this.body);
+    }
+
+    response += `\r\n${formattedBody}`;
     return response;
   }
 }
