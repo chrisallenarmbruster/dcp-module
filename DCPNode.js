@@ -2,6 +2,7 @@ const dgram = require("dgram");
 const net = require("net");
 const DCPRequest = require("./DCPRequest.js");
 const DCPResponse = require("./DCPResponse.js");
+const DCPJsonBody = require("./DCPJsonBody.js");
 
 class DCPNode {
   constructor(id) {
@@ -188,9 +189,6 @@ class DCPNode {
         responseSocket,
         rinfo
       );
-      // _handleResponse(response) {
-      //   console.log("Received response:", JSON.stringify(response, null, 2));
-      // }
       if (parsedMessage instanceof DCPResponse) {
         try {
           const response = parsedMessage;
@@ -284,7 +282,8 @@ class DCPNode {
       const contentType = headers["content-type"];
       if (contentType === "application/json") {
         try {
-          body = JSON.parse(rawBody);
+          // body = JSON.parse(rawBody);
+          body = new DCPJsonBody(rawBody);
         } catch (error) {
           console.error("Error parsing JSON body:", error);
         }
@@ -337,7 +336,8 @@ class DCPNode {
       const contentType = headers["content-type"];
       if (contentType === "application/json") {
         try {
-          body = JSON.parse(rawBody);
+          // body = JSON.parse(rawBody);
+          body = new DCPJsonBody(rawBody);
         } catch (error) {
           console.error("Error parsing JSON body:", error);
         }
