@@ -47,35 +47,9 @@ const jsonString = `{
                 }
               }
             }
-          },
-          "bus2": {
-            "temperature_sensor_1": {
-              "events": {
-                "temperature_reading": {
-                  "floatValue": -32.45161290322581,
-                  "value": "-32.45",
-                  "valueUnit": "fahrenheit"
-                },
-                "humidity_reading": {
-                  "floatValue": 50.0,
-                  "value": "50%",
-                  "valueUnit": "percent"
-                }
-              }
-            },
-            "temperature_sensor_2": {
-              "events": {
-                "temperature_reading": {
-                  "floatValue": -32.45161290322581,
-                  "value": "-32.45",
-                  "valueUnit": "fahrenheit"
-                }
-              }
-            }
           }
         }
-      },
-      "objectModel": {}
+      }
     }
   }
 }`;
