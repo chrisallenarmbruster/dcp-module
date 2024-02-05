@@ -17,13 +17,17 @@ dcpNode.listen(LISTEN_PORT, (req, res) => {
       req.protocol
     } request:\n\n${req.getFormattedMessage()}\n`
   );
-  res.setBody("Hello back at you!");
+  // console.log("req.body:", req.body);
+  // console.log("typeof req.body:", typeof req.body);
+  res.setHeader("Content-Type", "text/plain");
+  res.setBody(`Total events received: ${req.body.getEvents().length}`);
   console.log(`\nParsed into Request Object:\n${JSON.stringify(req, null, 2)}`);
   console.log(`\nPrepared Response Object:\n${JSON.stringify(res, null, 2)}`);
+  console.log("events:", req.body.getEvents());
   console.log(
     `\n\nSending formatted ${
       req.protocol
-    } response:\n\n${res.getFormattedMessage()}`
+    } response:\n\n${res.getFormattedMessage()}\n\n`
   );
   res.send();
 });

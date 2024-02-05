@@ -9,9 +9,50 @@
 
 const dcpNode = require("./dcp").createNode("thing1");
 const LISTEN_PORT = 2500; // What Thing 1 is listening on
-const PROTOCOL = "TCP"; // "UDP" or "TCP"
+const PROTOCOL = "UDP"; // "UDP" or "TCP"
 const THING_TWO_HOST = "localhost";
 const THING_TWO_PORT = 2501; // if you are running Thing 1 and Thing 2 on the same machine, use a different ports!  Make sure this matches the LISTEN_PORT in thingTwoDemoScript.js.
+
+const jsonString = `{
+  "DCP": {
+    "version": "1.0",
+    "host": {
+      "make": "Espressif",
+      "model": "ESP32-DevKitC-32",
+      "mac": "D4:8A:FC:CE:F9:C8",
+      "ip": "192.169.1.110",
+      "data": {
+        "objects": {
+          "bus1": {
+            "temperature_sensor_1": {
+              "events": {
+                "temperature_reading": {
+                  "floatValue": -32.45161290322581,
+                  "value": "-32.45",
+                  "valueUnit": "fahrenheit"
+                },
+                "humidity_reading": {
+                  "floatValue": 50.0,
+                  "value": "50%",
+                  "valueUnit": "percent"
+                }
+              }
+            },
+            "temperature_sensor_2": {
+              "events": {
+                "temperature_reading": {
+                  "floatValue": -32.45161290322581,
+                  "value": "-32.45",
+                  "valueUnit": "fahrenheit"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}`;
 
 // Set up listener and request handler callback for incoming DCP requests
 dcpNode.listen(LISTEN_PORT, (req, res) => {
@@ -41,18 +82,17 @@ const makeRequest = async () => {
     "DCP/1.0",
     PROTOCOL,
     { "Content-Type": "application/json" },
-    "Hello, World!"
+    jsonString
   );
 
   // Set any additional headers on the request message
   req.setHeader("Content-Length", req.body.length);
 
   // Optionally, set the a body on the request message (if not passed in constructor)
-  req.setBody((req.body += "\nHello, Universe!"));
+  // req.setHeader("content-type", "text/plain");
+  // req.setBody("\nHello, Universe!");
 
-  console.log(
-    `\nPrepared request message object:\n${JSON.stringify(req, null, 2)}`
-  );
+  console.log(`\nPrepared request message object:\n${req}`);
 
   console.log(
     `\n\nSending formatted DCP request message over ${

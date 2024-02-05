@@ -13,16 +13,20 @@ class DCPRequest {
     this.requestUri = requestUri;
     this.version = version;
     this.protocol = protocol;
-    this.headers = headers;
     this.body = body;
+
+    this.headers = {};
+    for (const [key, value] of Object.entries(headers)) {
+      this.headers[key.toLowerCase()] = value;
+    }
   }
 
   setHeader(name, value) {
-    this.headers[name] = value;
+    this.headers[name.toLowerCase()] = value;
   }
 
   getHeader(name) {
-    return this.headers[name];
+    return this.headers[name.toLowerCase()];
   }
 
   setBody(body) {
@@ -30,7 +34,7 @@ class DCPRequest {
   }
 
   removeHeader(name) {
-    delete this.headers[name];
+    delete this.headers[name.toLowerCase()];
   }
 
   getFormattedMessage() {
@@ -41,10 +45,18 @@ class DCPRequest {
 
     let headers = "";
     for (const [key, value] of Object.entries(this.headers)) {
-      headers += `${key}: ${value}\r\n`;
+      headers += `${key.toLowerCase()}: ${value}\r\n`;
     }
 
-    return `${requestLine}${headers}\r\n${this.body}`;
+    let formattedBody = this.body;
+    if (
+      typeof this.body === "object" &&
+      this.getHeader("content-type") === "application/json"
+    ) {
+      formattedBody = JSON.stringify(this.body);
+    }
+
+    return `${requestLine}${headers}\r\n${formattedBody}`;
   }
 
   _generateTransactionId() {
