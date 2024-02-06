@@ -1,3 +1,5 @@
+const DCPUri = require("./DCPUri.js");
+
 class DCPRequest {
   constructor(
     methodOperator,
@@ -10,7 +12,9 @@ class DCPRequest {
   ) {
     this.methodOperator = methodOperator;
     this.requestMethod = requestMethod;
-    this.requestUri = requestUri;
+    console.log("requestUri", requestUri);
+    this.requestUri =
+      requestUri instanceof DCPUri ? requestUri : new DCPUri(requestUri);
     this.version = version;
     this.protocol = protocol;
     this.body = body;
@@ -38,7 +42,7 @@ class DCPRequest {
   }
 
   getFormattedMessage() {
-    let requestLine = `${this.requestMethod} ${this.requestUri} ${this.version}\r\n`;
+    let requestLine = `${this.requestMethod} ${this.requestUri.uriString} ${this.version}\r\n`;
     if (this.methodOperator) {
       requestLine = `${this.methodOperator}!` + requestLine;
     }

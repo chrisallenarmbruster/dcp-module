@@ -282,7 +282,6 @@ class DCPNode {
       const contentType = headers["content-type"];
       if (contentType === "application/json") {
         try {
-          // body = JSON.parse(rawBody);
           body = new DCPJsonBody(rawBody);
         } catch (error) {
           console.error("Error parsing JSON body:", error);
@@ -336,7 +335,6 @@ class DCPNode {
       const contentType = headers["content-type"];
       if (contentType === "application/json") {
         try {
-          // body = JSON.parse(rawBody);
           body = new DCPJsonBody(rawBody);
         } catch (error) {
           console.error("Error parsing JSON body:", error);

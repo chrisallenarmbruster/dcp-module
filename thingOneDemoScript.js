@@ -78,7 +78,7 @@ const makeRequest = async () => {
   const req = dcpNode.createRequestMessage(
     "CANCEL",
     "GET",
-    "DCP://dcp.domain.com/Security.Reset()",
+    "dcp://dcp.domain.com/Security.Reset()",
     "DCP/1.0",
     PROTOCOL,
     { "Content-Type": "application/json" },
