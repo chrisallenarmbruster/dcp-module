@@ -1,6 +1,6 @@
 # Node Module for DCP Protocol
 
-This is a node.js library for my [DCP Protocol](https://dcp.rev4labs.com), analogous to the http library for the HTTP protocol. It is a work in progress and is not yet ready for distribution, but it is a working demonstration of the core protocol function. Key features implemented:
+This is a node.js library for my [DCP Protocol](https://dcp.rev4labs.com), analogous to the http library for the HTTP protocol, but DCP is optimized for IoT. It is a work in progress and is not yet ready for distribution, but it already implements the core protocol functions and includes helper classes.  See the [DCP Protocol Specification](https://dcp.rev4labs.com) for details or my [IoT Manager](https://github.com/chrisallenarmbruster/iot-manager) project which is a working full stack IoT demonstration using this module.  Key features implemented:
 
 - Works on both TCP and UDP transport layers
 - TCP Request/Response cycles can be synchronous or asynchronous (i.e. close the TCP socket after sending a request and wait for a response, or leave the socket open and handle responses as they come in)
