@@ -29,39 +29,43 @@ class DCPResponse {
   }
 
   async send(body, keepConnectionOpen = false) {
-    if (body !== undefined) {
-      if (typeof body === "object" && !(body instanceof String)) {
-        if (!this.getHeader("content-type")) {
-          this.setHeader("content-type", "application/json");
-        }
-        this.body = JSON.stringify(body);
-      } else {
-        console.log("body:", body);
-        this.body = body;
-      }
-    }
-
-    let response = this.getFormattedMessage();
-    if (this.protocol === "TCP") {
-      this.responseSocket.write(response, () => {
-        if (!keepConnectionOpen) {
-          this.responseSocket.end();
-        }
-      });
-    } else if (this.protocol === "UDP" && this.rinfo) {
-      const messageBuffer = Buffer.from(response);
-      this.responseSocket.send(
-        messageBuffer,
-        0,
-        messageBuffer.length,
-        this.destinationPort || this.rinfo.port || 2500,
-        this.rinfo.address,
-        (err) => {
-          if (err) {
-            console.error("UDP send error:", err);
+    try {
+      if (body !== undefined) {
+        if (typeof body === "object" && !(body instanceof String)) {
+          if (!this.getHeader("content-type")) {
+            this.setHeader("content-type", "application/json");
           }
+          this.body = JSON.stringify(body);
+        } else {
+          this.body = body;
         }
-      );
+      }
+
+      let response = this.getFormattedMessage();
+      if (this.protocol === "TCP") {
+        this.responseSocket.write(response, () => {
+          if (!keepConnectionOpen) {
+            this.responseSocket.end();
+          }
+        });
+      } else if (this.protocol === "UDP" && this.rinfo) {
+        const messageBuffer = Buffer.from(response);
+        this.responseSocket.send(
+          messageBuffer,
+          0,
+          messageBuffer.length,
+          this.destinationPort || this.rinfo.port || 2500,
+          this.rinfo.address,
+          (err) => {
+            if (err) {
+              console.error("UDP send error:", err);
+            }
+          }
+        );
+      }
+    } catch (err) {
+      console.log("Error in DCPResponse.send: ", err);
+      throw err;
     }
   }
 

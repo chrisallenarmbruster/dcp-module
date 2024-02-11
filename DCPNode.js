@@ -168,7 +168,9 @@ class DCPNode {
       this._handleIncomingMessage(msg.toString(), "UDP", this.udpServer, rinfo);
     });
     this.udpServer.bind(port);
-    console.log(`Listening for UDP messages on port ${port}...`);
+    console.log(
+      `Listening for DCP messages on UDP transport layer of port ${port}...`
+    );
   }
 
   _setupTCPServer(port) {
@@ -178,7 +180,9 @@ class DCPNode {
       });
     });
     tcpServer.listen(port);
-    console.log(`Listening for TCP messages on port ${port}...`);
+    console.log(
+      `Listening for DCP messages on TCP transport layer of port ${port}...`
+    );
   }
 
   _handleIncomingMessage(rawMessage, protocol, responseSocket, rinfo) {

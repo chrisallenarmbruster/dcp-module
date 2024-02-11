@@ -12,7 +12,6 @@ class DCPRequest {
   ) {
     this.methodOperator = methodOperator;
     this.requestMethod = requestMethod;
-    console.log("requestUri", requestUri);
     this.requestUri =
       requestUri instanceof DCPUri ? requestUri : new DCPUri(requestUri);
     this.version = version;
